@@ -62,14 +62,13 @@ public class PlayerMouvement : MonoBehaviour
              _root.rotation = Quaternion.Euler(0, -180, 0);
          }*/
 
-
-        var forwardCamera = _playerCamera.transform.TransformDirection(_playerMovement);
-        forwardCamera.y = 0;
-        rb.MovePosition(rb.transform.position + (forwardCamera * _speed * Time.fixedDeltaTime));
-
-
-        var tmp = new Vector3(forwardCamera.x, 0, forwardCamera.z);
+        var tmp = new Vector3(_playerCamera.transform.forward.x, 0, _playerCamera.transform.forward.z);
         rb.transform.LookAt(rb.transform.position + tmp);
+
+        var cameraDirection = _playerCamera.transform.TransformDirection(_playerMovement);
+        cameraDirection.y = 0;
+        rb.MovePosition(rb.transform.position + (cameraDirection * _speed * Time.fixedDeltaTime));
+
         //var tmp = new Vector3(forwardCamera.x, 0, forwardCamera.z);
         //rb.transform.LookAt(rb.transform.position + tmp);
         // _chara.Move(transform.position + (_playerMovement * _speed * Time.fixedDeltaTime));
