@@ -25,6 +25,8 @@ public class PlayerMouvement : MonoBehaviour
 
     private void Update()
     {
+
+
         if (_playerMovement.magnitude > _MovingThreshold)  // si on est ent train de bouger alors 
         {
             _animator.SetBool("Iswalking", true);
@@ -35,6 +37,9 @@ public class PlayerMouvement : MonoBehaviour
         {                 //sinon c'est qu'on bouge pas donc false
             _animator.SetBool("Iswalking", false);
         }
+
+
+
     }
 
     void FixedUpdate()
@@ -56,10 +61,17 @@ public class PlayerMouvement : MonoBehaviour
          {
              _root.rotation = Quaternion.Euler(0, -180, 0);
          }*/
-      
 
-        rb.MovePosition(transform.position + (_playerMovement * _speed * Time.fixedDeltaTime));
-        rb.transform.LookAt(transform.position + (_playerMovement * _speed * Time.fixedDeltaTime));
+
+        var forwardCamera = _playerCamera.transform.TransformDirection(_playerMovement);
+        forwardCamera.y = 0;
+        rb.MovePosition(rb.transform.position + (forwardCamera * _speed * Time.fixedDeltaTime));
+
+
+        var tmp = new Vector3(forwardCamera.x, 0, forwardCamera.z);
+        rb.transform.LookAt(rb.transform.position + tmp);
+        //var tmp = new Vector3(forwardCamera.x, 0, forwardCamera.z);
+        //rb.transform.LookAt(rb.transform.position + tmp);
         // _chara.Move(transform.position + (_playerMovement * _speed * Time.fixedDeltaTime));
 
 
@@ -87,6 +99,5 @@ public class PlayerMouvement : MonoBehaviour
     void EndMove(InputAction.CallbackContext obj)
     {
        _playerMovement = new Vector3(0, 0, 0);
-
     }
 }
