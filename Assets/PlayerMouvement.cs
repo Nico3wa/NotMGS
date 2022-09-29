@@ -12,8 +12,9 @@ public class PlayerMouvement : MonoBehaviour
     [SerializeField] Animator _animator;
     Vector3 _playerMovement;
     [SerializeField] GameObject _playerCamera;
-    [SerializeField] Rigidbody rb;
-    // [SerializeField] CharacterController _chara;
+   // [SerializeField] Rigidbody rb;
+    [SerializeField] CharacterController _chara;
+    [SerializeField] float _gravityPush;
 
 
     void Start()
@@ -44,44 +45,32 @@ public class PlayerMouvement : MonoBehaviour
 
     void FixedUpdate()
     {
-        // orientation
-        /* if (_playerMovement.x > 0)     //right
-         {
-             _root.rotation = Quaternion.Euler(0, 90, 0);
-         }
-         else if (_playerMovement.x < 0)   //left
-         {
-             _root.rotation = Quaternion.Euler(0, -90, 0);
-         }
-         if (_playerMovement.z > 0)     //right
-         {
-             _root.rotation = Quaternion.Euler(0, 0, 0);
-         }
-         else if (_playerMovement.z < 0)   //left
-         {
-             _root.rotation = Quaternion.Euler(0, -180, 0);
-         }*/
-
+        // Orientation
         var tmp = new Vector3(_playerCamera.transform.forward.x, 0, _playerCamera.transform.forward.z);
-        rb.transform.LookAt(rb.transform.position + tmp);
+      //  rb.transform.LookAt(rb.transform.position + tmp);
+        _chara.transform.LookAt(_chara.transform.position + tmp); 
+       
 
+        // Move
         var cameraDirection = _playerCamera.transform.TransformDirection(_playerMovement);
         cameraDirection.y = 0;
-        rb.MovePosition(rb.transform.position + (cameraDirection * _speed * Time.fixedDeltaTime));
 
+        // Gravité
+        var gravity = new Vector3(0, _gravityPush, 0);
+        if (_chara.isGrounded)
+        {
+            gravity.y = 0;
+        }
+
+
+
+
+        // rb.MovePosition(rb.transform.position + (cameraDirection * _speed * Time.fixedDeltaTime));
+        _chara.Move((cameraDirection * _speed * Time.fixedDeltaTime) + (gravity * Time.deltaTime)) ;
+        
         //var tmp = new Vector3(forwardCamera.x, 0, forwardCamera.z);
         //rb.transform.LookAt(rb.transform.position + tmp);
-        // _chara.Move(transform.position + (_playerMovement * _speed * Time.fixedDeltaTime));
 
-
-        /* if (_playerMovement.magnitude > _MovingThreshold)  // si on est ent train de bouger alors 
-         {
-             _animator.SetBool("isWalking", true);
-         }
-         else
-         {                 //sinon c'est qu'on bouge pas donc false
-             _animator.SetBool("isWalking", false);
-         }*/
     }
     public void StartMove(InputAction.CallbackContext obj)
     {
