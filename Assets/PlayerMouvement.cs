@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerMouvement : MonoBehaviour
 {
+    enum StatePlayer { IDLE, Run, Walk, Crounch}
     [SerializeField] InputActionReference _moveInput;
     [SerializeField] Transform _root;
     [SerializeField] float _speed;
@@ -25,7 +26,7 @@ public class PlayerMouvement : MonoBehaviour
     [SerializeField] bool _isJumping;
 
     [SerializeField] InputActionReference _crounchInput;
-    [SerializeField] bool _crounch;
+
     
     [SerializeField] GameObject _sword;
     [SerializeField] GameObject _positionBack;
@@ -34,10 +35,16 @@ public class PlayerMouvement : MonoBehaviour
     public bool _equiped;
     [SerializeField] InputActionReference _ArmeWeapon;
 
+    [SerializeField] InputActionReference _SprintInput;
+
+    [SerializeField] float _sprint;
     Vector3 _gravity;
 
+
+    StatePlayer _playerState;
     void Start()
     {
+        _playerState = StatePlayer.IDLE;
         _moveInput.action.started += StartMove;
         _moveInput.action.performed += UdpateMove;
         _moveInput.action.canceled += EndMove;
@@ -50,34 +57,24 @@ public class PlayerMouvement : MonoBehaviour
         _equiped = false;
 
         _ArmeWeapon.action.started += StartWeapon;
+
+
+        _SprintInput.action.started += Action_started;
+        _SprintInput.action.performed += uptadeSprint;
+
     }
+
 
     private void Update()
     {
+        _animator.SetBool("isRunning", _playerState == StatePlayer.Run);
+        _animator.SetBool("Iswalking", _playerState == StatePlayer.Walk);
+        _animator.SetBool("Crounch", _playerState == StatePlayer.Crounch);
+
         if (_playerMovement.magnitude > _MovingThreshold)  // si on est ent train de bouger alors 
         {
-            if (_crounch == false)
-            _animator.SetBool("Iswalking", true);
             _animator.SetFloat("Horrizontal", _playerMovement.x);
             _animator.SetFloat("Vertical", _playerMovement.z);
-            if (_crounch == true)
-            {
-                _animator.SetBool("WalkingCrounch", true);
-                _animator.SetFloat("CHorrizontal", _playerMovement.x);
-                _animator.SetFloat("CVertical", _playerMovement.z);
-            }
-        }
-        else
-        {                 //sinon c'est qu'on bouge pas donc false
-            if (_crounch == false)
-            {
-                _animator.SetBool("Iswalking", false);
-                _animator.SetBool("WalkingCrounch", false);
-            }
-            if (_crounch == true)
-            {
-                _animator.SetBool("WalkingCrounch", false);
-            }
         }
     }
 
@@ -143,23 +140,37 @@ public class PlayerMouvement : MonoBehaviour
 
 
         _chara.Move((cameraDirection * _speed * Time.fixedDeltaTime) + (_gravity * Time.deltaTime)) ;
-        
+        if (_playerState == StatePlayer.Run)
+        {
+            _chara.Move((cameraDirection * _sprint * Time.fixedDeltaTime) + (_gravity * Time.deltaTime));
+        }
 
     }
     public void StartMove(InputAction.CallbackContext obj)
     {
-     var joystick = obj.ReadValue<Vector2>();
+        _playerState = StatePlayer.Walk;
+        var joystick = obj.ReadValue<Vector2>();
         _playerMovement = new Vector3(joystick.x, 0, joystick.y);
 
     
     }
     private void UdpateMove(InputAction.CallbackContext obj)
     {
+        Debug.Log("Update Move");
         var joystick = obj.ReadValue<Vector2>();
         _playerMovement = new Vector3(joystick.x, 0, joystick.y);
+        if(_playerState == StatePlayer.Run || _playerState == StatePlayer.Crounch)
+        {
+            // nothing
+        }
+        else
+        {
+            _playerState = StatePlayer.Walk;
+        }
     }
     void EndMove(InputAction.CallbackContext obj)
     {
+        _playerState = StatePlayer.IDLE;
        _playerMovement = new Vector3(0, 0, 0);
     }
     private void StartJump(InputAction.CallbackContext obj)
@@ -175,19 +186,14 @@ public class PlayerMouvement : MonoBehaviour
     }
     public void StartCrounch(InputAction.CallbackContext obj)
     {
-        _crounch = true;
-
+        _playerState = StatePlayer.Crounch;
     }
     private void UdpateCrounch(InputAction.CallbackContext obj)
     {
-        _animator.SetBool("Crounch", true);
-        _crounch = true;
+        _playerState = StatePlayer.Crounch;
     }
     void EndCrounch(InputAction.CallbackContext obj)
     {
-        _animator.SetBool("Crounch", false);
-        _crounch = false;
-        _animator.SetBool("WalkingCrounch", false);
     }
     
     public void StartWeapon(InputAction.CallbackContext obj)
@@ -203,5 +209,14 @@ public class PlayerMouvement : MonoBehaviour
             _equiped = true;
         }
         
+    }
+    private void Action_started(InputAction.CallbackContext obj)
+    {
+
+    }
+    private void uptadeSprint(InputAction.CallbackContext obj)
+    {
+        Debug.Log("Update Sprint");
+        _playerState = StatePlayer.Run;
     }
 }

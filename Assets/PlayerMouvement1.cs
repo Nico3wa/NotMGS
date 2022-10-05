@@ -27,7 +27,6 @@ public class PlayerMouvement1 : MonoBehaviour
     public bool _isGrounded;
     [SerializeField] Transform _rayCastR;
 
-
     void Start()
     {
         _moveInput.action.started += StartMove;
@@ -36,8 +35,8 @@ public class PlayerMouvement1 : MonoBehaviour
 
        _jumpInput.action.started += StartJump;
 
-       
     }
+
 
     private void Update()
     {

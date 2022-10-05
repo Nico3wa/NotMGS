@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Playables;
 
 public class Enemy : MonoBehaviour
 {
@@ -15,14 +16,17 @@ public class Enemy : MonoBehaviour
     [SerializeField] NavMeshAgent _agent;
     [SerializeField] float _gravityPush;
 
+    [SerializeField] Animator _animator; 
     float targetDistance;
     [SerializeField] float _zoneChase;
     [SerializeField] float stopchase;
-
+    [SerializeField] PlayableDirector _playableDirector;
+    [SerializeField] GameObject _play;
     // Vector3 _playerChase;
     StateAI _state;
     Vector3 _gravity;
     int i;
+     
 
     // Start is called before the first frame update
     void Start()
@@ -39,16 +43,19 @@ public class Enemy : MonoBehaviour
         {
             case StateAI.PATROL:
                 Patrol();
-
+                _play.SetActive(false);
                 // Transition
                 if (Vector3.Distance(transform.position, _player.transform.position) <= _zoneChase)
                 {
+                    _play.SetActive(true);
+                    _playableDirector.Play();
                     _state = StateAI.CHASE;
+                    //   _animator.SetBool("IsRunning", true);
                 }
             /*    else if(false)
                 {
                     _state = StateAI.ATTACK;
-
+             
                 }*/
                 break;
             case StateAI.CHASE:
@@ -65,6 +72,7 @@ public class Enemy : MonoBehaviour
                 else if(targetDistance > _zoneChase)
                 {
                     _state = StateAI.PATROL;
+
                 }
 
                 break;
@@ -79,6 +87,15 @@ public class Enemy : MonoBehaviour
             
             default:
                 break;
+        }
+
+        if (_agent.path == null)
+        {
+            _animator.SetBool("IsRunning", false);
+        }
+        else
+        {
+            _animator.SetBool("IsRunning", true);
         }
 
         // Gravity
@@ -98,6 +115,7 @@ public class Enemy : MonoBehaviour
     void Patrol()
     {
         // Go to patrol
+        _agent.SetDestination(PatrolPoint[i].position);
         if (_agent.remainingDistance < _minDistance)
         {
             i++;
@@ -105,7 +123,6 @@ public class Enemy : MonoBehaviour
             {
                 i = 0; // reset index
             }
-            _agent.SetDestination(PatrolPoint[i].position);
         }
 
     }
@@ -114,4 +131,5 @@ public class Enemy : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, _zoneChase);
     }
+   
 }
