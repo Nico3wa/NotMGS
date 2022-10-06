@@ -26,7 +26,6 @@ public class PlayerMouvement : MonoBehaviour
     [SerializeField] bool _isJumping;
 
     [SerializeField] InputActionReference _crounchInput;
-
     
     [SerializeField] GameObject _sword;
     [SerializeField] GameObject _positionBack;
@@ -59,11 +58,11 @@ public class PlayerMouvement : MonoBehaviour
         _ArmeWeapon.action.started += StartWeapon;
 
 
-        _SprintInput.action.started += Action_started;
+        _SprintInput.action.started += StartSprint;
         _SprintInput.action.performed += uptadeSprint;
+        _SprintInput.action.canceled += CancelSprint; ;
 
     }
-
 
     private void Update()
     {
@@ -75,6 +74,11 @@ public class PlayerMouvement : MonoBehaviour
         {
             _animator.SetFloat("Horrizontal", _playerMovement.x);
             _animator.SetFloat("Vertical", _playerMovement.z);
+        }
+        else
+        {
+            _animator.SetFloat("Horrizontal", 0);
+            _animator.SetFloat("Vertical", 0);
         }
     }
 
@@ -194,8 +198,9 @@ public class PlayerMouvement : MonoBehaviour
     }
     void EndCrounch(InputAction.CallbackContext obj)
     {
+        _playerState = StatePlayer.IDLE;
     }
-    
+
     public void StartWeapon(InputAction.CallbackContext obj)
     {
         if (_equiped)
@@ -210,13 +215,25 @@ public class PlayerMouvement : MonoBehaviour
         }
         
     }
-    private void Action_started(InputAction.CallbackContext obj)
+    
+    private void StartSprint(InputAction.CallbackContext obj)
     {
-
+        _playerState = StatePlayer.Run;
     }
     private void uptadeSprint(InputAction.CallbackContext obj)
     {
         Debug.Log("Update Sprint");
         _playerState = StatePlayer.Run;
+    }
+    private void CancelSprint(InputAction.CallbackContext obj)
+    {
+        if(_playerMovement.magnitude > 0.1f)
+        {
+            _playerState = StatePlayer.Walk;
+        }
+        else
+        {
+            _playerState = StatePlayer.IDLE;
+        }
     }
 }
